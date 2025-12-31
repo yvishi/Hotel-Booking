@@ -5,6 +5,7 @@ import cors from "cors"
 import connectDB from "./configs/db.js";
 import { clerkMiddleware } from '@clerk/express'
 import clerkWebhooks from "./controllers/clerkWebhooks.js";
+import userRouter from "./routes/userRoutes.js";
 
 connectDB();
 
@@ -23,6 +24,8 @@ app.use("/api/clerk", clerkWebhooks);
 app.get("/",(req,res)=>{
     res.send("API Working!!")
 })
+
+app.use("/api/user", userRouter);
 
 app.listen(port,()=>{
     console.log(`Server is running at http://localhost:${port}`)
