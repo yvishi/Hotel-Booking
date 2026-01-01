@@ -7,7 +7,7 @@ export const protect= async(req,res,next)=>{
         res.json({success:false, message: "not Authorized"});
     }else{
         const User= await user.findById(userId);
-        req.User=User;
+        req.user=User;
         next();
     }
 }

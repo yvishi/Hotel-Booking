@@ -6,8 +6,12 @@ import connectDB from "./configs/db.js";
 import { clerkMiddleware } from '@clerk/express'
 import clerkWebhooks from "./controllers/clerkWebhooks.js";
 import userRouter from "./routes/userRoutes.js";
+import hotelRouter from "./routes/hotelRoutes.js";
+import connectCloudinary from "./configs/cloudinary.js";
+import roomRouter from "./routes/roomRoutes.js";
 
 connectDB();
+connectCloudinary();
 
 const app=express();
 const port=process.env.PORT || 3000;
@@ -26,6 +30,8 @@ app.get("/",(req,res)=>{
 })
 
 app.use("/api/user", userRouter);
+app.use("/api/hotels", hotelRouter)
+app.use("/api/rooms", roomRouter)
 
 app.listen(port,()=>{
     console.log(`Server is running at http://localhost:${port}`)
