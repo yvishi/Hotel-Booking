@@ -4,7 +4,7 @@ import user from "../models/user.js";
 
 export const registerHotel= async(req,res)=>{
     try {
-        const {name,adress,contact,city}=req.body;
+        const {name,address,contact,city}=req.body;
         const owner=req.user._id;
         
         //Check if user already registered
@@ -13,7 +13,7 @@ export const registerHotel= async(req,res)=>{
             return res.json({success:false, message: "Hotel Already Registered"});
         }
 
-        await hotel.create({name,adress,contact,owner,city});
+        await hotel.create({name,address,contact,owner,city});
         await user.findByIdAndUpdate(owner,{role:"hotelOwner"});
         res.json({success:true, message: "Hotel Registered Successfully"});
     } catch (error) {

@@ -1,6 +1,6 @@
 import booking from "../models/booking.js"
-import { hotel as Hotel} from "../models/hotel.js";
-import {room as Room} from "../models/room.js"
+import Hotel from "../models/hotel.js";
+import Room from "../models/room.js"
 
 //Check Availability of room
 const checkAvailability=async(checkInDate,checkOutDate,room)=>{

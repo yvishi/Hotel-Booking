@@ -4,24 +4,28 @@ import room from "../models/room.js";
 
 //api to create new room
 export const createRoom=async(req,res)=>{
+    
     try {
         const {roomType, pricePerNight, amenities}=req.body;
         const Hotel= await hotel.findOne({owner: req.auth.userId});
-
+        
         if(!Hotel){
             return res.json({success:false, message: "Hotel not found"});
         }
         
         //upload images to Cloudinary
-        const uploadImages= req.files.map(async(file)=>{
-            const responce= await cloudinary.uploader.upload(file.path);
-            return responce.secure_url;
-        })
+        const uploadImages = req.files.map(async (file) => {
+        const response = await cloudinary.uploader.upload(file.path);
+        return response.secure_url;
+        });
+
+        
         //Wait for all images to upload
         const images= await Promise.all(uploadImages);
-
+        
+        
         await room.create({
-            hotel: hotel._id,
+            hotel: Hotel._id,
             roomType,
             pricePerNight: +pricePerNight,
             amenities: JSON.parse(amenities),
@@ -30,6 +34,7 @@ export const createRoom=async(req,res)=>{
 
         res.json({success:true, message: "Room created successfully"});
     } catch (error) {
+        console.log("yahan se aaya hun mai");
         res.json({success:false, message: error.message});
     }
 }
