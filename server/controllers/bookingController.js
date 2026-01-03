@@ -1,12 +1,13 @@
+import transporter from "../configs/nodemailer.js";
 import booking from "../models/booking.js"
 import Hotel from "../models/hotel.js";
 import Room from "../models/room.js"
 
 //Check Availability of room
-const checkAvailability=async(checkInDate,checkOutDate,room)=>{
+const checkAvailability=async(checkInDate,checkOutDate,roomId)=>{
     try {
         const bookings= await booking.find({
-            room: room._id, 
+            room: roomId, 
             checkInDate: {$lte: checkOutDate},
             checkOutDate: {$gte: checkInDate}
         });
@@ -36,6 +37,7 @@ export const createBooking= async(req,res)=>{
     try {
         const {room, checkInDate, checkOutDate, guests}=req.body;
         const user=req.user._id;
+      
         //check availability
         const isAvailable=await checkAvailability(checkInDate,checkOutDate,room);
         if(!isAvailable){
@@ -52,7 +54,9 @@ export const createBooking= async(req,res)=>{
         const nights=Math.ceil(timeDiff/(1000*60*60*24));
         totalPrice*=nights;
 
-        await booking.create({
+        
+
+        const Booking=await booking.create({
             user, 
             room, 
             checkInDate, 
@@ -61,6 +65,28 @@ export const createBooking= async(req,res)=>{
             totalPrice, 
             hotel: roomData.hotel._id, 
         });
+
+        const mailOptions={
+            from: process.env.SENDER_EMAIL,
+            to: req.user.email,
+            subject: "Hotel Booking Confirmation",
+            html: `
+            <h2>Your Booking Details</h2>
+            <p>Dear ${req.user.username},</p>
+            <p>Thank you for booking with us. Here are your booking details:</p>
+            <ul>
+                <li><strong>Booking ID:</strong> ${Booking._id}</li>
+                <li><strong>Hotel Name:</strong> ${roomData.hotel.name}</li>
+                <li><strong>Location:</strong> ${roomData.hotel.address}</li>
+                <li><strong>Date:</strong> ${Booking.checkInDate.toDateString()}}</li>
+                <li><strong>Booking Amount:</strong> ${process.env.CURRENCY || '$'}${Booking.totalPrice} / night</li>
+            </ul>
+            <p>We look forward to welcoming you to our hotel.</p>
+            <p>If you need to make any changes, feel free to contact us.</p>
+            `
+        }
+        const info=await transporter.sendMail(mailOptions);
+        console.log(info.messageId);
         res.json({success:true, message: "Booking created successfully"});
     } catch (error) {
         console.log(error);
@@ -72,7 +98,8 @@ export const createBooking= async(req,res)=>{
 //api to get all bookings for a user (/user)
 export const getUserBookings= async(req,res)=>{
     try {
-        const bookings=(await booking.find({user: req.user._id}).populate("room").populate("hotel")).toSorted({createdAt:-1});
+        
+        const bookings=(await booking.find({user: req.user._id}).populate("room").populate("hotel").sort({createdAt:-1}));
         res.json({success:true, bookings});
     } catch (error) {
         res.json({success:false, message: error.message});

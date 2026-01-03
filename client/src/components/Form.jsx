@@ -1,18 +1,39 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { assets, cities } from '../assets/assets'
+import { useAppContext } from '../context/AppContext'
 
 const Form = () => {
-  
+
+    const { getToken, axios, navigate, setSearchedCities}= useAppContext();
+    const [destination,setDestination]= useState('');
+    
+    const onSearch= async (e)=>{
+            e.preventDefault();
+            navigate(`/rooms?destination=${destination}`)
+            
+            //calling API to save recent searched cities
+            await axios.post('/api/user/store-recent-search', {recentSearchedCities: destination}, {headers: {Authorization: `Bearer ${await getToken()}`}});
+
+            //adding destination to recent searched cities
+            setSearchedCities((prevCities)=>{
+                const updatedCities=[...prevCities, destination];
+                if(updatedCities.length>3){
+                    updatedCities.shift();
+                }
+                return updatedCities;
+            })
+        
+    }
 
     return (
-        <form className='bg-white text-gray-500 rounded-lg px-6 py-4 mt-8 flex flex-col md:flex-row max-md:items-start gap-4 max-md:mx-auto'>
+        <form onSubmit={onSearch} className='bg-white text-gray-500 rounded-lg px-6 py-4 mt-8 flex flex-col md:flex-row max-md:items-start gap-4 max-md:mx-auto'>
 
             <div>
                 <div className='flex items-center gap-2'>
                     <img src={assets.calenderIcon} alt="Calender" className='h-4' />
                     <label htmlFor="destinationInput">Destination</label>
                 </div>
-                <input list='destinations' id="destinationInput" type="text" className=" rounded border border-gray-200 px-3 py-1.5 mt-1.5 text-sm outline-none" placeholder="Type here" required />
+                <input onChange={(event)=> setDestination(event.target.value)} value={destination} list='destinations' id="destinationInput" type="text" className=" rounded border border-gray-200 px-3 py-1.5 mt-1.5 text-sm outline-none" placeholder="Type here" required />
                 <datalist id='destinations'>
                     {cities.map((city,index)=>{
                         return(
