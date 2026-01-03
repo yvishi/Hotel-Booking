@@ -17,18 +17,25 @@ const clerkWebhooks=async(req,res)=>{
         await whook.verify(JSON.stringify(req.body),headers);
 
         const {data,type}=req.body;
-        const userData={
-            _id: data.id,
-            username: data.first_name + " " + data.last_name,
-            email: data.email_addresses?.[0]?.email_address ?? null,
-            image: data.image_url,        
-            }
+        
             switch (type) {
                 case "user.created":{
+                    const userData={
+                        _id: data.id,
+                        username: data.first_name + " " + data.last_name,
+                        email: data.email_addresses?.[0]?.email_address ?? null,
+                        image: data.image_url,        
+                    }
                     await user.create(userData);
                     break;
                 }
                 case "user.updated":{
+                    const userData={
+                        _id: data.id,
+                        username: data.first_name + " " + data.last_name,
+                        email: data.email_addresses?.[0]?.email_address ?? null,
+                        image: data.image_url,        
+                    }
                     await user.findByIdAndUpdate(data.id, userData);
                     break;
                 }
