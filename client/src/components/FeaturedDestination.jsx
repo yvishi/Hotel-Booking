@@ -10,7 +10,7 @@ const FeaturedDestination = () => {
         
         <Title title={"Featured Destination"} subtitle={" Discover the best hotels and resorts for your next vacation,handpciked by our experts, to provide you the best and unparalled experience"}/>
         
-        <div className='flex flex-wrap items-center justify-center gap-6 mt-20'>
+        <div className='flex flex-row items-center justify-center gap-6 mt-20'>
             {rooms.slice(0,4).map((room,index)=>{
                 return(
                     <HotelCard room={room} index={index} key={room._id}/>
