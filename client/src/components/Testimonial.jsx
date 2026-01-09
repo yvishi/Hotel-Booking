@@ -16,7 +16,7 @@ const Testimonial = () => {
                             <img className="w-12 h-12 rounded-full" src={testimonial.image} alt={testimonial.name} />
                             <div>
                                 <p className="font-playfair text-xl">{testimonial.name}</p>
-                                <p className="text-gray-500">{testimonial.location}</p>
+                                <p className="text-gray-500">{testimonial.address}</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-1 mt-4">
