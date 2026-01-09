@@ -22,9 +22,22 @@ const MyBookings = () => {
         }
     }
 
+    const handlePayment= async(bookingId)=>{ 
+        try {
+            const {data}= await axios.post('/api/bookings/stripe-payment', {bookingId}, {headers: {Authorization: `Bearer ${await getToken()}`}});
+            if(data.success){
+                window.location.assign(data.url);
+            }else{
+                toast.error(data.message);
+            }
+        } catch (error) {
+            toast.error(error.message);
+        }
+    }
+
     useEffect(()=>{
         if(user){
-            fetchUserBookings();
+            fetchUserBookings()
         }
     },[user])
 
@@ -37,7 +50,7 @@ const MyBookings = () => {
                 <div className='w-1/3'>Date & Timings</div>
                 <div className='w-1/3'>Payment</div>
             </div>
-
+           
             {bookings.map((booking) =>(
                 <div key={booking._id} className='grid grid-cols-3 md:grid-cols-[3fr_2fr_1fr] w-full border-b border-gray-300 py-3'>
                     {/* hotel Details */}
@@ -85,7 +98,7 @@ const MyBookings = () => {
                             </p>
                         </div>
                         {!booking.isPaid && (
-                            <button className='px-4 py-1.5 mt-4 text-xs border border-gray-400 rounded-full hover:bg-gray-50 transition-all cursor-pointer'>Pay Now</button>
+                            <button onClick={()=>handlePayment(booking._id)} className='px-4 py-1.5 mt-4 text-xs border border-gray-400 rounded-full hover:bg-gray-50 transition-all cursor-pointer'>Pay Now</button>
                         )}
                     </div>
                 </div>

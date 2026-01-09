@@ -10,6 +10,7 @@ import hotelRouter from "./routes/hotelRoutes.js";
 import connectCloudinary from "./configs/cloudinary.js";
 import roomRouter from "./routes/roomRoutes.js";
 import bookingRouter from "./routes/bookingRoutes.js";
+import { stripeWebhooks } from "./controllers/stripeWebhooks.js";
 
 connectDB();
 connectCloudinary();
@@ -17,12 +18,10 @@ connectCloudinary();
 const app=express();
 const port=process.env.PORT || 3000;
 
-app.use(cors({
-  origin: true,               // allow Vercel + local
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
-}));
+app.use(cors());
+
+//API to listen to Stripe Webhooks
+app.post("/api/stripe", express.raw({type: "application/json"}), stripeWebhooks);
 
 //Middleware
 app.use(express.json());

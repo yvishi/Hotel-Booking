@@ -1,5 +1,6 @@
+import Stripe from "stripe";
 import transporter from "../configs/nodemailer.js";
-import booking from "../models/booking.js"
+import booking from "../models/booking.js";
 import Hotel from "../models/hotel.js";
 import Room from "../models/room.js"
 
@@ -100,6 +101,7 @@ export const getUserBookings= async(req,res)=>{
     try {
         
         const bookings=(await booking.find({user: req.user._id}).populate("room").populate("hotel").sort({createdAt:-1}));
+        
         res.json({success:true, bookings});
     } catch (error) {
         res.json({success:false, message: error.message});
@@ -123,6 +125,47 @@ export const getHotelBookings= async(req,res)=>{
     const totalRevenue=bookings.reduce((total,booking)=>total+booking.totalPrice,0);
 
     res.json({success:true, dashboardData: {totalBookings, totalRevenue, bookings}});
+    } catch (error) {
+        res.json({success:false, message: error.message});
+    }
+}
+
+export const stripePayment= async(req,res)=>{
+    try {
+        const {bookingId}= req.body
+
+        const Booking= await booking.findById(bookingId);
+        const roomData= await Room.findById(Booking.room).populate('hotel');
+        const totalPrice= Booking.totalPrice;
+        const {origin}= req.headers;
+
+        const stripeInstance= new Stripe(process.env.STRIPE_SECRET_KEY);
+
+        const line_items=[
+            {
+                price_data:{
+                    currency: "inr",
+                    product_data:{
+                        name: roomData.hotel.name,
+                    },
+                    unit_amount: totalPrice*100
+                },
+                quantity:1,
+            }
+        ]
+
+        const session= await stripeInstance.checkout.sessions.create({
+            line_items,
+            mode: "payment",
+            success_url: `${origin}/loader/myBookings`,
+            cancel_url: `${origin}/myBookings`,
+            metadata:{
+                bookingId,
+            }
+            
+        })
+
+        res.json({success:true, url: session.url});
     } catch (error) {
         res.json({success:false, message: error.message});
     }
